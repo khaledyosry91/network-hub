@@ -1,9 +1,9 @@
 'use client'
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function VerifyPage() {
+function VerifyForm() {
   const supabase = createClient()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -104,12 +104,24 @@ export default function VerifyPage() {
         </form>
 
         <p className="text-center text-xs text-gray-400 mt-4">
-          Didn't receive it?{' '}
+          Did not receive it?{' '}
           <button onClick={handleResend} className="text-gray-900 font-medium underline">
             Resend code
           </button>
         </p>
       </div>
     </div>
+  )
+}
+
+export default function VerifyPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-sm text-gray-400">Loading...</p>
+      </div>
+    }>
+      <VerifyForm />
+    </Suspense>
   )
 }
