@@ -21,9 +21,7 @@ export default async function HubPage() {
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 bg-black rounded-lg flex items-center justify-center">
-            <div className="w-1.5 h-1.5 bg-white rounded-full" />
-          </div>
+          <img src="/wabil-icon.svg" alt="Wabil Capital" className="w-8 h-8" />
           <span className="font-medium text-gray-900">Network Hub</span>
         </div>
         <div className="flex items-center gap-4">
