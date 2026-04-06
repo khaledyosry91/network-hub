@@ -16,62 +16,61 @@ export default function AuthPage() {
     setLoading(true)
     setError('')
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
-      setError(error.message)
-      setLoading(false)
-    } else {
-      router.push('/hub')
-    }
+    if (error) { setError(error.message); setLoading(false) }
+    else router.push('/hub')
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white border border-gray-200 rounded-2xl p-8 w-full max-w-md">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-            <div className="w-2 h-2 bg-white rounded-full" />
-          </div>
-          <div>
-            <div className="font-medium text-gray-900">Network Hub</div>
-            <div className="text-xs text-gray-400">VC relationship intelligence</div>
-          </div>
+    <div style={{ minHeight: '100vh', background: '#FAFAF9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: '100%', maxWidth: '400px', padding: '0 16px' }}>
+
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <img src="/wabil-icon.svg" alt="Wabil Capital" style={{ width: '56px', height: '56px', margin: '0 auto 16px' }} />
+          <div style={{ fontFamily: 'Georgia, serif', fontSize: '22px', fontWeight: '400', letterSpacing: '-0.025em', color: '#1A1A1A', marginBottom: '4px' }}>Wabil Capital</div>
+          <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '10px', letterSpacing: '0.18em', color: '#C9A96E', textTransform: 'uppercase' }}>Network Hub</div>
         </div>
 
-        <h1 className="text-xl font-medium text-gray-900 mb-1">Sign in</h1>
-        <p className="text-sm text-gray-400 mb-6">Access is by invitation only</p>
+        <div style={{ background: '#FFFFFF', border: '0.5px solid #E6E6E4', borderRadius: '14px', padding: '36px 32px' }}>
+          <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', fontWeight: '400', color: '#1A1A1A', marginBottom: '6px', letterSpacing: '-0.02em' }}>Sign in</h1>
+          <p style={{ fontFamily: 'Arial, sans-serif', fontSize: '13px', color: '#888888', marginBottom: '28px' }}>Access is by invitation only</p>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="text-xs text-gray-500 mb-1 block">Work email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="you@fund.vc"
-              required
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400"
-            />
-          </div>
-          <div>
-            <label className="text-xs text-gray-500 mb-1 block">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400"
-            />
-          </div>
-          {error && <p className="text-xs text-red-500">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-black text-white rounded-lg py-2 text-sm font-medium disabled:opacity-40"
-          >
-            {loading ? 'Signing in...' : 'Sign in'}
-          </button>
-        </form>
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <label style={{ fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#888888', display: 'block', marginBottom: '6px' }}>Work email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@wabilcapital.com"
+                required
+                style={{ width: '100%', fontFamily: 'Arial, sans-serif', fontSize: '13px', color: '#1A1A1A', background: '#FAFAF9', border: '0.5px solid #E6E6E4', borderRadius: '8px', padding: '10px 14px', outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
+            <div>
+              <label style={{ fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#888888', display: 'block', marginBottom: '6px' }}>Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                style={{ width: '100%', fontFamily: 'Arial, sans-serif', fontSize: '13px', color: '#1A1A1A', background: '#FAFAF9', border: '0.5px solid #E6E6E4', borderRadius: '8px', padding: '10px 14px', outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
+            {error && <p style={{ fontFamily: 'Arial, sans-serif', fontSize: '12px', color: '#B52D2D', margin: '0' }}>{error}</p>}
+            <button
+              type="submit"
+              disabled={loading}
+              style={{ width: '100%', fontFamily: 'Arial, sans-serif', fontSize: '13px', fontWeight: '500', color: '#FFFFFF', background: '#1A1A1A', border: 'none', borderRadius: '8px', padding: '11px', cursor: 'pointer', opacity: loading ? 0.5 : 1, marginTop: '4px' }}
+            >
+              {loading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </form>
+        </div>
+
+        <p style={{ fontFamily: 'Arial, sans-serif', fontSize: '12px', color: '#888888', textAlign: 'center', marginTop: '20px' }}>
+          Don't have access? Contact your admin.
+        </p>
       </div>
     </div>
   )

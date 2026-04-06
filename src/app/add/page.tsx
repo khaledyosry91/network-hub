@@ -25,6 +25,22 @@ const STAGES: Record<string, string[]> = {
   'Government': ['In Network', 'Intro Made', 'Meeting Done', 'Active Relationship', 'MOU Signed'],
 }
 const SOURCES = ['Warm intro', 'Cold outreach', 'Conference / event', 'Scout referral', 'LinkedIn', 'Accelerator', 'Other']
+const TYPE_COLORS: Record<string, {bg: string, text: string}> = {
+  'Portfolio':    { bg: '#F0F4FF', text: '#2D4DB5' },
+  'Co-investors': { bg: '#EEF5FF', text: '#1A5FA8' },
+  'Lawyers':      { bg: '#F3F0FF', text: '#5B3DB5' },
+  'Advisors':     { bg: '#FFF8F0', text: '#6B3D00' },
+  'Scouts':       { bg: '#EDFAF4', text: '#0D6B3F' },
+  'LPs':          { bg: '#FFF3E8', text: '#A84F00' },
+  'Media & PR':   { bg: '#FFF0FB', text: '#8B006B' },
+  'Government':   { bg: '#F5F5F3', text: '#444441' },
+}
+
+const label = (text: string) => (
+  <label style={{ fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#888888', display: 'block', marginBottom: '6px' }}>{text}</label>
+)
+
+const inputStyle = { width: '100%', fontFamily: 'Arial, sans-serif', fontSize: '13px', color: '#1A1A1A', background: '#FAFAF9', border: '0.5px solid #E6E6E4', borderRadius: '8px', padding: '10px 14px', outline: 'none', boxSizing: 'border-box' as const }
 
 export default function AddPage() {
   const supabase = createClient()
@@ -37,7 +53,7 @@ export default function AddPage() {
     first_name: '', last_name: '', firm_name: '', role: '',
     email: '', phone: '', linkedin_url: '', geography: '',
     sector: '', focus: '', source: '', context: '',
-    strengths: '', watchouts: '', next_action: '',
+    strengths: '', watchouts: '',
   })
 
   function upd(k: string, v: string) { setForm(f => ({ ...f, [k]: v })) }
@@ -46,205 +62,162 @@ export default function AddPage() {
     setLoading(true)
     setError('')
     const { data: { user } } = await supabase.auth.getUser()
-    const { data: profile } = await supabase
-      .from('profiles').select('firm_id').eq('id', user!.id).single()
-
-    const { error } = await supabase.from('contacts').insert({
-      ...form,
-      firm_id: profile?.firm_id,
-      created_by: user!.id,
-    })
-
+    const { data: profile } = await supabase.from('profiles').select('firm_id').eq('id', user!.id).single()
+    const { error } = await supabase.from('contacts').insert({ ...form, firm_id: profile?.firm_id, created_by: user!.id })
     if (error) { setError(error.message); setLoading(false) }
     else router.push('/hub')
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-7 h-7 bg-black rounded-lg flex items-center justify-center">
-            <div className="w-1.5 h-1.5 bg-white rounded-full" />
+  const nav = (
+    <nav style={{ background: '#FFFFFF', borderBottom: '0.5px solid #E6E6E4', padding: '0 32px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <img src="/wabil-icon.svg" alt="Wabil Capital" style={{ width: '32px', height: '32px' }} />
+        <div>
+          <div style={{ fontFamily: 'Georgia, serif', fontSize: '14px', letterSpacing: '-0.02em', color: '#1A1A1A' }}>Wabil Capital</div>
+          <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '8px', letterSpacing: '0.18em', color: '#C9A96E', textTransform: 'uppercase' }}>Network Hub</div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: '28px' }}>
+        <a href="/hub" style={{ fontFamily: 'Arial, sans-serif', fontSize: '13px', color: '#888888', textDecoration: 'none' }}>Hub</a>
+        <a href="/add" style={{ fontFamily: 'Arial, sans-serif', fontSize: '13px', fontWeight: '500', color: '#1A1A1A', textDecoration: 'none' }}>Add contact</a>
+      </div>
+    </nav>
+  )
+
+  const stepBar = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '32px' }}>
+      {[1,2,3].map(n => (
+        <div key={n} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: n === step ? '#1A1A1A' : n < step ? '#C9A96E' : '#E6E6E4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Arial, sans-serif', fontSize: '11px', fontWeight: '500', color: n <= step ? '#FFFFFF' : '#888888' }}>
+            {n < step ? '✓' : n}
           </div>
-          <span className="font-medium text-gray-900">Network Hub</span>
+          <span style={{ fontFamily: 'Arial, sans-serif', fontSize: '12px', color: n === step ? '#1A1A1A' : '#888888', fontWeight: n === step ? '500' : '400' }}>
+            {n === 1 ? 'Type & identity' : n === 2 ? 'Details' : 'Context'}
+          </span>
+          {n < 3 && <div style={{ width: '32px', height: '0.5px', background: '#E6E6E4', margin: '0 4px' }} />}
         </div>
-        <div className="flex items-center gap-4">
-          <a href="/hub" className="text-sm text-gray-500 hover:text-gray-900">Hub</a>
-          <a href="/add" className="text-sm font-medium text-gray-900">Add contact</a>
-        </div>
-      </nav>
+      ))}
+    </div>
+  )
 
-      <div className="max-w-2xl mx-auto px-6 py-8">
-        <div className="flex items-center gap-2 mb-8">
-          {[1,2,3].map(n => (
-            <div key={n} className="flex items-center gap-2">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
-                n === step ? 'bg-black text-white' : n < step ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
-              }`}>{n < step ? '✓' : n}</div>
-              <span className={`text-sm ${n === step ? 'font-medium text-gray-900' : 'text-gray-400'}`}>
-                {n === 1 ? 'Type & identity' : n === 2 ? 'Details' : 'Context'}
-              </span>
-              {n < 3 && <div className="w-8 h-px bg-gray-200 mx-1" />}
+  const card = (children: React.ReactNode) => (
+    <div style={{ background: '#FFFFFF', border: '0.5px solid #E6E6E4', borderRadius: '12px', padding: '28px' }}>
+      {children}
+    </div>
+  )
+
+  const tagBtn = (label: string, active: boolean, onClick: () => void) => (
+    <button key={label} onClick={onClick} type="button" style={{ fontFamily: 'Arial, sans-serif', fontSize: '12px', padding: '5px 12px', borderRadius: '20px', border: active ? '1.5px solid #1A1A1A' : '0.5px solid #E6E6E4', background: active ? '#1A1A1A' : '#FFFFFF', color: active ? '#FFFFFF' : '#888888', cursor: 'pointer' }}>{label}</button>
+  )
+
+  const nextBtn = (text: string, onClick: () => void, disabled = false) => (
+    <button onClick={onClick} disabled={disabled} type="button" style={{ fontFamily: 'Arial, sans-serif', fontSize: '13px', fontWeight: '500', color: '#FFFFFF', background: '#1A1A1A', border: 'none', borderRadius: '8px', padding: '10px 20px', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.4 : 1 }}>{text}</button>
+  )
+
+  const backBtn = (onClick: () => void) => (
+    <button onClick={onClick} type="button" style={{ fontFamily: 'Arial, sans-serif', fontSize: '13px', color: '#888888', background: 'none', border: '0.5px solid #E6E6E4', borderRadius: '8px', padding: '10px 16px', cursor: 'pointer' }}>Back</button>
+  )
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#FAFAF9' }}>
+      {nav}
+      <div style={{ maxWidth: '640px', margin: '0 auto', padding: '40px 24px' }}>
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', fontWeight: '400', letterSpacing: '-0.025em', color: '#1A1A1A', marginBottom: '28px' }}>Add contact</h1>
+        {stepBar}
+
+        {step === 1 && card(
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div>
+              <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#888888', marginBottom: '10px' }}>Network type</div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                {NETWORK_TYPES.map(t => {
+                  const tc = TYPE_COLORS[t]
+                  const active = form.network_type === t
+                  return (
+                    <button key={t} onClick={() => upd('network_type', t)} type="button" style={{ fontFamily: 'Arial, sans-serif', fontSize: '11px', fontWeight: '500', padding: '8px 6px', borderRadius: '8px', border: active ? `1.5px solid ${tc.text}` : '0.5px solid #E6E6E4', background: active ? tc.bg : '#FFFFFF', color: active ? tc.text : '#888888', cursor: 'pointer' }}>{t}</button>
+                  )
+                })}
+              </div>
             </div>
-          ))}
-        </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div>{label('First name')}<input value={form.first_name} onChange={e => upd('first_name', e.target.value)} placeholder="Layla" style={inputStyle} /></div>
+              <div>{label('Last name')}<input value={form.last_name} onChange={e => upd('last_name', e.target.value)} placeholder="Al-Rashid" style={inputStyle} /></div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div>{label('Firm')}<input value={form.firm_name} onChange={e => upd('firm_name', e.target.value)} placeholder="Firm name" style={inputStyle} /></div>
+              <div>{label('Role')}<input value={form.role} onChange={e => upd('role', e.target.value)} placeholder="CEO" style={inputStyle} /></div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div>{label('Email')}<input value={form.email} onChange={e => upd('email', e.target.value)} placeholder="name@firm.com" style={inputStyle} /></div>
+              <div>{label('Phone')}<input value={form.phone} onChange={e => upd('phone', e.target.value)} placeholder="+971 50 000 0000" style={inputStyle} /></div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              {nextBtn('Next: Details', () => setStep(2), !form.network_type || !form.first_name || !form.last_name)}
+            </div>
+          </div>
+        )}
 
-        <div className="bg-white border border-gray-200 rounded-2xl p-6">
-          {step === 1 && (
-            <div className="space-y-5">
-              <div>
-                <label className="text-xs text-gray-500 mb-2 block font-medium">Network type</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {NETWORK_TYPES.map(t => (
-                    <button key={t} type="button"
-                      onClick={() => upd('network_type', t)}
-                      className={`p-2 rounded-lg border text-xs font-medium text-left ${
-                        form.network_type === t ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-600 hover:border-gray-400'
-                      }`}>{t}</button>
-                  ))}
-                </div>
+        {step === 2 && card(
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div>
+              <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#888888', marginBottom: '10px' }}>Subtype</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {(SUBTYPES[form.network_type] || []).map(s => tagBtn(s, form.subtype === s, () => upd('subtype', s)))}
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">First name</label>
-                  <input value={form.first_name} onChange={e => upd('first_name', e.target.value)}
-                    placeholder="Layla" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400" />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Last name</label>
-                  <input value={form.last_name} onChange={e => upd('last_name', e.target.value)}
-                    placeholder="Al-Rashid" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400" />
-                </div>
+            </div>
+            <div>
+              <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#888888', marginBottom: '10px' }}>Stage</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {(STAGES[form.network_type] || []).map(s => tagBtn(s, form.stage === s, () => upd('stage', s)))}
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Firm</label>
-                  <input value={form.firm_name} onChange={e => upd('firm_name', e.target.value)}
-                    placeholder="Firm name" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400" />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Role</label>
-                  <input value={form.role} onChange={e => upd('role', e.target.value)}
-                    placeholder="CEO" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400" />
-                </div>
+            </div>
+            <div>
+              <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#888888', marginBottom: '10px' }}>Priority</div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {['High', 'Medium', 'Low'].map(p => tagBtn(p, form.priority === p, () => upd('priority', p)))}
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Email</label>
-                  <input value={form.email} onChange={e => upd('email', e.target.value)}
-                    placeholder="name@firm.com" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400" />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Phone</label>
-                  <input value={form.phone} onChange={e => upd('phone', e.target.value)}
-                    placeholder="+971 50 000 0000" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400" />
-                </div>
-              </div>
-              <button onClick={() => setStep(2)} disabled={!form.network_type || !form.first_name || !form.last_name}
-                className="w-full bg-black text-white rounded-lg py-2 text-sm font-medium disabled:opacity-40">
-                Next: Details
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div>{label('Geography')}<input value={form.geography} onChange={e => upd('geography', e.target.value)} placeholder="Dubai, UAE" style={inputStyle} /></div>
+              <div>{label('Sector')}<input value={form.sector} onChange={e => upd('sector', e.target.value)} placeholder="Fintech" style={inputStyle} /></div>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              {backBtn(() => setStep(1))}
+              {nextBtn('Next: Context', () => setStep(3), !form.subtype || !form.stage)}
+            </div>
+          </div>
+        )}
+
+        {step === 3 && card(
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            <div>
+              {label('How did we meet?')}
+              <select value={form.source} onChange={e => upd('source', e.target.value)} style={{ ...inputStyle }}>
+                <option value="">Select...</option>
+                {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              {label('Context / background')}
+              <textarea value={form.context} onChange={e => upd('context', e.target.value)} rows={3} placeholder="Who they are, what they do, why relevant..." style={{ ...inputStyle, resize: 'vertical' as const }} />
+            </div>
+            <div>
+              {label('Strengths & opportunity')}
+              <textarea value={form.strengths} onChange={e => upd('strengths', e.target.value)} rows={2} placeholder="What excites us..." style={{ ...inputStyle, resize: 'vertical' as const }} />
+            </div>
+            <div>
+              {label('Watch-outs')}
+              <textarea value={form.watchouts} onChange={e => upd('watchouts', e.target.value)} rows={2} placeholder="Risks, concerns, open questions..." style={{ ...inputStyle, resize: 'vertical' as const }} />
+            </div>
+            {error && <p style={{ fontFamily: 'Arial, sans-serif', fontSize: '12px', color: '#B52D2D' }}>{error}</p>}
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              {backBtn(() => setStep(2))}
+              <button onClick={handleSubmit} disabled={loading} type="button" style={{ fontFamily: 'Arial, sans-serif', fontSize: '13px', fontWeight: '500', color: '#FFFFFF', background: '#1A1A1A', border: 'none', borderRadius: '8px', padding: '10px 20px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.5 : 1 }}>
+                {loading ? 'Saving...' : 'Add to network'}
               </button>
             </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-5">
-              <div>
-                <label className="text-xs text-gray-500 mb-2 block font-medium">Subtype</label>
-                <div className="flex flex-wrap gap-2">
-                  {(SUBTYPES[form.network_type] || []).map(s => (
-                    <button key={s} type="button" onClick={() => upd('subtype', s)}
-                      className={`px-3 py-1.5 rounded-full border text-xs font-medium ${
-                        form.subtype === s ? 'bg-black text-white border-black' : 'border-gray-200 text-gray-600 hover:border-gray-400'
-                      }`}>{s}</button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 mb-2 block font-medium">Stage</label>
-                <div className="flex flex-wrap gap-2">
-                  {(STAGES[form.network_type] || []).map(s => (
-                    <button key={s} type="button" onClick={() => upd('stage', s)}
-                      className={`px-3 py-1.5 rounded-full border text-xs font-medium ${
-                        form.stage === s ? 'bg-black text-white border-black' : 'border-gray-200 text-gray-600 hover:border-gray-400'
-                      }`}>{s}</button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 mb-2 block font-medium">Priority</label>
-                <div className="flex gap-2">
-                  {['High', 'Medium', 'Low'].map(p => (
-                    <button key={p} type="button" onClick={() => upd('priority', p)}
-                      className={`flex-1 py-2 rounded-lg border text-xs font-medium ${
-                        form.priority === p ? 'bg-black text-white border-black' : 'border-gray-200 text-gray-600 hover:border-gray-400'
-                      }`}>{p}</button>
-                  ))}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Geography</label>
-                  <input value={form.geography} onChange={e => upd('geography', e.target.value)}
-                    placeholder="Dubai, UAE" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400" />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Sector</label>
-                  <input value={form.sector} onChange={e => upd('sector', e.target.value)}
-                    placeholder="Fintech" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400" />
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <button onClick={() => setStep(1)} className="flex-1 border border-gray-200 rounded-lg py-2 text-sm">Back</button>
-                <button onClick={() => setStep(3)} disabled={!form.subtype || !form.stage}
-                  className="flex-1 bg-black text-white rounded-lg py-2 text-sm font-medium disabled:opacity-40">
-                  Next: Context
-                </button>
-              </div>
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">How did we meet?</label>
-                <select value={form.source} onChange={e => upd('source', e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400">
-                  <option value="">Select...</option>
-                  {SOURCES.map(o => (
-                    <option key={o} value={o}>{o}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Context / background</label>
-                <textarea value={form.context} onChange={e => upd('context', e.target.value)}
-                  rows={3} placeholder="Who they are, what they do, why relevant..."
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 resize-none" />
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Strengths and opportunity</label>
-                <textarea value={form.strengths} onChange={e => upd('strengths', e.target.value)}
-                  rows={2} placeholder="What excites us..."
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 resize-none" />
-              </div>
-              <div>
-                <label className="text-xs text-gray-500 mb-1 block">Watch-outs</label>
-                <textarea value={form.watchouts} onChange={e => upd('watchouts', e.target.value)}
-                  rows={2} placeholder="Risks, concerns, open questions..."
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-gray-400 resize-none" />
-              </div>
-              {error && <p className="text-xs text-red-500">{error}</p>}
-              <div className="flex gap-3">
-                <button onClick={() => setStep(2)} className="flex-1 border border-gray-200 rounded-lg py-2 text-sm">Back</button>
-                <button onClick={handleSubmit} disabled={loading}
-                  className="flex-1 bg-black text-white rounded-lg py-2 text-sm font-medium disabled:opacity-40">
-                  {loading ? 'Saving...' : 'Add to network'}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )
