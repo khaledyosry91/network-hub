@@ -80,6 +80,7 @@ export default function HubClient({ contacts, profile, userName }: { contacts: a
 
   return (
     <div style={{ minHeight: '100vh', background: '#FAFAF9' }}>
+
       <nav style={{ background: '#FFFFFF', borderBottom: '0.5px solid #E6E6E4', padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 40 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <img src="/wabil-icon.svg" alt="Wabil Capital" style={{ width: '32px', height: '32px' }} />
@@ -92,7 +93,11 @@ export default function HubClient({ contacts, profile, userName }: { contacts: a
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }} className="desktop-nav">
           <a href="/hub" style={{ fontFamily: 'Arial, sans-serif', fontSize: '13px', fontWeight: '500', color: '#1A1A1A', textDecoration: 'none' }}>Hub</a>
           <a href="/add" style={{ fontFamily: 'Arial, sans-serif', fontSize: '13px', color: '#888888', textDecoration: 'none' }}>Add contact</a>
-          {profile?.is_admin && <a href="/settings" style={{ fontFamily: 'Arial, sans-serif', fontSize: '13px', color: '#888888', textDecoration: 'none' }}>Settings</a>}
+          <a href="/orgs" style={{ fontFamily: 'Arial, sans-serif', fontSize: '13px', color: '#888888', textDecoration: 'none' }}>Organisations</a>
+          <a href="/profile" style={{ fontFamily: 'Arial, sans-serif', fontSize: '13px', color: '#888888', textDecoration: 'none' }}>Profile</a>
+          {profile?.is_admin && (
+            <a href="/settings" style={{ fontFamily: 'Arial, sans-serif', fontSize: '13px', color: '#888888', textDecoration: 'none' }}>Settings</a>
+          )}
           <button onClick={() => setAiOpen(!aiOpen)} style={{ fontFamily: 'Arial, sans-serif', fontSize: '12px', fontWeight: '500', color: '#FFFFFF', background: '#C9A96E', border: 'none', borderRadius: '6px', padding: '6px 14px', cursor: 'pointer' }}>
             AI Assistant
           </button>
@@ -112,7 +117,11 @@ export default function HubClient({ contacts, profile, userName }: { contacts: a
         <div style={{ background: '#FFFFFF', borderBottom: '0.5px solid #E6E6E4', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <a href="/hub" style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px', fontWeight: '500', color: '#1A1A1A', textDecoration: 'none' }}>Hub</a>
           <a href="/add" style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#888888', textDecoration: 'none' }}>Add contact</a>
-          {profile?.is_admin && <a href="/settings" style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#888888', textDecoration: 'none' }}>Settings</a>}
+          <a href="/orgs" style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#888888', textDecoration: 'none' }}>Organisations</a>
+          <a href="/profile" style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#888888', textDecoration: 'none' }}>Profile</a>
+          {profile?.is_admin && (
+            <a href="/settings" style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#888888', textDecoration: 'none' }}>Settings</a>
+          )}
           <button onClick={() => { setAiOpen(!aiOpen); setMobileMenuOpen(false) }} style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px', fontWeight: '500', color: '#FFFFFF', background: '#C9A96E', border: 'none', borderRadius: '6px', padding: '8px 16px', cursor: 'pointer', textAlign: 'left' }}>
             AI Assistant
           </button>
