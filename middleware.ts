@@ -3,7 +3,7 @@ import { createServerClient } from '@supabase/ssr'
 
 export async function middleware(req: NextRequest) {
   let res = NextResponse.next({ request: req })
-  
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -26,17 +26,25 @@ export async function middleware(req: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+
   const isAuth = req.nextUrl.pathname.startsWith('/auth')
   const isInvite = req.nextUrl.pathname.startsWith('/invite')
+  const isPublic = req.nextUrl.pathname.startsWith('/_next') ||
+    req.nextUrl.pathname.startsWith('/api') ||
+    req.nextUrl.pathname === '/favicon.ico' ||
+    req.nextUrl.pathname.endsWith('.svg') ||
+    req.nextUrl.pathname.endsWith('.png')
+
+  if (isPublic) return res
 
   if (!user && !isAuth && !isInvite)
     return NextResponse.redirect(new URL('/auth', req.url))
   if (user && isAuth)
     return NextResponse.redirect(new URL('/hub', req.url))
-  
+
   return res
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.svg|.*\\.png).*)'],
 }
