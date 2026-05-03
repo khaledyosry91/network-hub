@@ -1,13 +1,23 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(req: NextRequest) {
-  const token = req.cookies.get('sb-access-token') ||
-    req.cookies.getAll().find(c => c.name.includes('auth-token'))
+  const { pathname } = req.nextUrl
 
-  const isAuth = req.nextUrl.pathname.startsWith('/auth')
-  const isInvite = req.nextUrl.pathname.startsWith('/invite')
+  const isAuth = pathname.startsWith('/auth')
+  const isInvite = pathname.startsWith('/invite')
+  const isStatic = pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.includes('.')
 
-  if (!token && !isAuth && !isInvite) {
+  if (isStatic || isAuth || isInvite) {
+    return NextResponse.next()
+  }
+
+  const hasCookie = req.cookies.getAll().some(c =>
+    c.name.includes('supabase') || c.name.includes('sb-')
+  )
+
+  if (!hasCookie) {
     return NextResponse.redirect(new URL('/auth', req.url))
   }
 
@@ -15,7 +25,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.svg|.*\\.png|api).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }
